@@ -29,7 +29,6 @@ interface SeedOutputProps {
 
 export default function SeedInput() {
   const seedRef = useRef<HTMLInputElement>(null);
-  const [checkbox, setCheckbox] = useState(true);
   const [seed, setSeed] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [walletCount, setWalletCount] = useState(0);
@@ -40,9 +39,11 @@ export default function SeedInput() {
 
   const handleGenerateSeed = async () => {
     try {
+      setIsLoading(true);
+      const numOfWords = seedBit === "12 words (128 bit)" ? true : false;
       const { data } = await axios.post("/api/getSeed", {
         oldSeed: seedRef.current?.value,
-        NumOfWords: checkbox,
+        NumOfWords: numOfWords,
       });
       setSeed(data.mnemonicArray);
       setWalletCount(walletCount + 1);
