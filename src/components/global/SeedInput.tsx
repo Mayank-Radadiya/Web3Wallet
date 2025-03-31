@@ -5,7 +5,14 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChevronDownIcon, Copy, Eye, EyeOff, TrashIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  Copy,
+  Eye,
+  EyeOff,
+  Loader2,
+  TrashIcon,
+} from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -35,7 +42,7 @@ export default function SeedInput() {
   const [seedBit, setSeedBit] = useState("Select seed bit");
   const [keys, setKeys] = useState<SeedOutputProps[]>([]);
   const [show, setShow] = useState(false);
-  console.log(show);
+  const [showSecretKey, setShowSecretKey] = useState(false);
 
   const handleGenerateSeed = async () => {
     try {
@@ -147,31 +154,82 @@ export default function SeedInput() {
               Add More Wallet
             </Button>
             <Button variant="destructive" onClick={handleClearSeed}>
-              <TrashIcon className="-ms-1 opacity-60" size={16} />
+              <TrashIcon className="-ms-1 opacity-60" size={16} /> Clear All
             </Button>
           </div>
           {keys.length > 0 &&
             keys.map((item, index) => (
-              <div key={index} className="mt-4">
-                <p className="w-full border p-2 text-sm font-mono rounded">
-                  <strong>Public Key:</strong> {item.publicKey}
-                </p>
-                <p className="w-full border p-2 text-sm font-mono rounded mt-2">
-                  <strong>Secret Key:</strong> {item.secretKey}
-                </p>
+              <div key={index} className="mt-6 p-4 border rounded-xl shadow-lg">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Solana Wallet {index + 1}
+                </h3>
+                <div className="p-3  rounded-lg border border-gray-300 dark:border-gray-700 shadow">
+                  <div className="text-sm font-mono flex items-center justify-between break-all">
+                    <div>
+                      <strong className="text-gray-600 dark:text-gray-400">
+                        Public Key:
+                      </strong>{" "}
+                      {item.publicKey}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        navigator.clipboard.writeText(item.publicKey);
+                        toast.success("Public key copied to clipboard");
+                      }}
+                      className="text-sm text-muted-foreground flex items-center gap-2 m-0"
+                    >
+                      <Copy />
+                    </Button>
+                  </div>
+                </div>
+                <div className="mt-3 p-3  rounded-lg border border-gray-300 dark:border-gray-700 shadow">
+                  <div className="text-sm font-mono flex items-center justify-between text-red-600 dark:text-red-400 break-all">
+                    <div>
+                      <strong className="text-gray-600 dark:text-gray-400">
+                        Secret Key:
+                      </strong>{" "}
+                      <span
+                        className={cn(showSecretKey ? "blur-0" : " blur-[3px]")}
+                      >
+                        {" "}
+                        {item.secretKey}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        className="text-sm text-muted-foreground flex items-center gap-2"
+                        onClick={() => setShowSecretKey(!showSecretKey)}
+                      >
+                        {showSecretKey ? <EyeOff /> : <Eye />}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          navigator.clipboard.writeText(item.secretKey);
+                          toast.success("Secret key copied to clipboard");
+                        }}
+                        className="text-sm text-muted-foreground flex items-center gap-2 m-0"
+                      >
+                        <Copy />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
         </div>
       ) : (
         <div className="mt-2">
-          <Label htmlFor="seedInput" className="text-sm">
-            Enter your master seed
+          <Label htmlFor="seedInput" className="text-sm opacity-80">
+            Enter your master seed if you have one
           </Label>
           <div className="flex gap-4 mt-2">
             <Input
               ref={seedRef}
               className="flex-1 h-12 text-[17px]"
-              placeholder="car, cat, apple ..."
+              placeholder="car, cat, apple ...(leave blank for random seed)"
               type="password"
             />
             <DropdownMenu>
@@ -198,9 +256,8 @@ export default function SeedInput() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            {/* <Checkbox onClick={() => setCheckbox(!checkbox)} defaultChecked /> */}
             <Button onClick={handleGenerateSeed} className="h-12">
-              {isLoading ? "Generating..." : "Generate"}
+              {isLoading ? <Loader2 className="animate-spin" /> : "Generate"}
             </Button>
           </div>
         </div>
