@@ -6,13 +6,19 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
 
     const publicKey = data.data.publicKey;
+    const network = data.data.network;
 
     if (!publicKey || publicKey === "") {
       return new NextResponse("Public key is required", { status: 400 });
     }
 
+    const url =
+      network === "Mainnet"
+        ? "https://solana-mainnet.g.alchemy.com/v2/zeY7qraQHouGaPLnz8JXWKMLQOYc4PEQ"
+        : "https://solana-devnet.g.alchemy.com/v2/zeY7qraQHouGaPLnz8JXWKMLQOYc4PEQ";
+
     const response = await axios.post(
-      "https://solana-mainnet.g.alchemy.com/v2/zeY7qraQHouGaPLnz8JXWKMLQOYc4PEQ",
+      url,
       {
         jsonrpc: "2.0",
         id: 1,

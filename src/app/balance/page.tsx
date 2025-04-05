@@ -1,8 +1,15 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from "axios";
+import { ChevronDownIcon, Loader2 } from "lucide-react";
 import { NextPage } from "next";
 import { useRef, useState } from "react";
 
@@ -14,11 +21,11 @@ interface AccountData {
       slot: number;
     };
     value: {
-      lamports: number;
-      owner: string;
-      executable: boolean;
-      rentEpoch: number;
-      space: number;
+      lamports?: number;
+      owner?: string;
+      executable?: boolean;
+      rentEpoch?: number;
+      space?: number;
     };
   };
   publicKey?: string; // We'll add this ourselves
@@ -28,9 +35,12 @@ const Page: NextPage = () => {
   const publicKeyRef = useRef<HTMLInputElement>(null);
   const [accountData, setAccountData] = useState<AccountData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectNet, setSelectNet] = useState<string>("Mainnet");
+  const [isLoading, setIsLoading] = useState(false);
 
   const checkBalance = async () => {
     try {
+      setIsLoading(true);
       setError(null);
       const publicKey = publicKeyRef.current?.value;
       if (!publicKey) {
@@ -41,6 +51,7 @@ const Page: NextPage = () => {
       const response = await axios.post("/api/getBalance", {
         data: {
           publicKey,
+          network: selectNet,
         },
       });
 
@@ -55,12 +66,15 @@ const Page: NextPage = () => {
         "Failed to fetch balance. Please check the public key and try again."
       );
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Convert lamports to SOL
-  const formatBalance = (lamports: number) => {
-    return (lamports / 1_000_000_000).toFixed(9); // 9 decimals for precision
+  const formatBalance = (lamports?: number) => {
+    if (!lamports) return "0.000000000";
+    return (lamports / 1_000_000_000).toFixed(9);
   };
 
   return (
@@ -85,8 +99,38 @@ const Page: NextPage = () => {
               placeholder="EDYJBBTojUG....."
               type="text"
             />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-32 h-12 justify-between">
+                  {selectNet}
+                  <ChevronDownIcon
+                    className="-me-1 opacity-60"
+                    size={16}
+                    aria-hidden="true"
+                  />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="min-w-(--radix-dropdown-menu-trigger-width)">
+                <DropdownMenuItem
+                  onSelect={() => setSelectNet("Mainnet")}
+                  className="cursor-pointer"
+                >
+                  Mainnet
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => setSelectNet("Devnet")}
+                  className="cursor-pointer"
+                >
+                  Devnet
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button onClick={checkBalance} className="h-12" type="submit">
-              Check Balance
+              {isLoading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Check Balance"
+              )}
             </Button>
           </div>
           {error && <p className="text-red-500 mt-2">{error}</p>}
@@ -107,38 +151,38 @@ const Page: NextPage = () => {
               <p className="text-lg">
                 Balance:{" "}
                 <span className="font-semibold">
-                  {formatBalance(accountData.result.value.lamports)} SOL
+                  {formatBalance(accountData?.result?.value?.lamports || 0)} SOL
                 </span>{" "}
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  ({accountData.result.value.lamports} lamports)
+                  ({accountData?.result?.value?.lamports || 0} lamports)
                 </span>
               </p>
               <p className="text-lg">
                 Owner Program:{" "}
                 <span className="font-semibold">
-                  {accountData.result.value.owner}
+                  {accountData?.result?.value?.owner || "-"}
                 </span>
               </p>
               <p className="text-lg">
                 Executable:{" "}
                 <span className="font-semibold">
-                  {accountData.result.value.executable ? "Yes" : "No"}
+                  {accountData?.result?.value?.executable ? "Yes" : "No"}
                 </span>
               </p>
               <p className="text-lg">
                 Slot:{" "}
                 <span className="font-semibold">
-                  {accountData.result.context.slot.toLocaleString()}
+                  {accountData?.result?.context?.slot?.toLocaleString()}
                 </span>
               </p>
               <p className="text-lg">
                 Space:{" "}
                 <span className="font-semibold">
-                  {accountData.result.value.space} bytes
+                  {accountData?.result?.value?.space} bytes
                 </span>
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                API Version: {accountData.result.context.apiVersion}
+                API Version: {accountData?.result?.context?.apiVersion}
               </p>
             </div>
           )}
