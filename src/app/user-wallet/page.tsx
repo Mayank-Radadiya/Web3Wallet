@@ -27,7 +27,7 @@ const Page = () => {
     try {
       newPublicKey = new PublicKey(inputPublicKey); // Convert string to PublicKey object
     } catch (err) {
-      toast.error("Invalid public key format");
+      toast.error(`Invalid public key format ${err}`,);
       return;
     }
 

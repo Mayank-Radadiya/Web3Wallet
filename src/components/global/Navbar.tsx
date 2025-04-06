@@ -7,10 +7,6 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import {
-  WalletDisconnectButton,
-  WalletMultiButton,
-} from "@solana/wallet-adapter-react-ui";
 
 const Navbar = () => {
   const id = useId();
