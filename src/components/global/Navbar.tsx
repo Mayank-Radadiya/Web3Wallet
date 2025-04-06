@@ -7,6 +7,10 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import {
+  WalletDisconnectButton,
+  WalletMultiButton,
+} from "@solana/wallet-adapter-react-ui";
 
 const Navbar = () => {
   const id = useId();
@@ -33,6 +37,11 @@ const Navbar = () => {
           </Link>
         </div>
         <div className="flex items-center gap-4">
+          <Link href="/user-wallet" className="rounded-md  ">
+            <Button variant="ghost" className="text-black dark:text-[#f7f7f7]">
+              Your wallet
+            </Button>
+          </Link>
           <Link href="/balance" className="rounded-md  ">
             <Button variant="ghost" className="text-black dark:text-[#f7f7f7]">
               Balance
