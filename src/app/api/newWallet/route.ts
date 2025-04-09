@@ -8,12 +8,14 @@ import bs58 from "bs58";
 interface RequestBody {
   seed: string[];
   i: number;
+  tokenType: string;
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body: RequestBody = await req.json();
-    const { seed, i } = body;
+    const { seed, i, tokenType } = body;
+    console.log(tokenType);
 
     if (!Array.isArray(seed) || seed.length === 0) {
       return NextResponse.json(
@@ -28,8 +30,24 @@ export async function POST(req: NextRequest) {
     // Convert mnemonic to seed buffer
     const seedBuffer = mnemonicToSeedSync(seedPhrase);
 
+    // Derive the path based on the token type
+    // Define token type
+    let tokenPath = "";
+    if (tokenType === "solana") {
+      tokenPath = `m/44'/501'/${i}'/0'`;
+    } else if (tokenType === "ethereum") {
+      tokenPath = `m/44'/60'/${i}'/0'`;
+    } else if (tokenType === "bitcoin") {
+      tokenPath = `m/44'/0'/${i}'/0'`;
+    } else {
+      return NextResponse.json(
+        { error: "Invalid token type" },
+        { status: 400 }
+      );
+    }
+
     // Use the standard Backpack Wallet derivation path
-    const path = `m/44'/501'/${i}'/0'`;
+    const path = `${tokenPath}`;
     const derivedSeed = derivePath(path, seedBuffer.toString("hex")).key;
 
     // Generate keypair using the derived seed

@@ -37,7 +37,8 @@ export default function SeedInput() {
   const [seed, setSeed] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [walletCount, setWalletCount] = useState(0);
-  const [seedBit, setSeedBit] = useState("Select seed bit");
+  const [seedBit, setSeedBit] = useState("12 words (128 bit)");
+  const [tokenType, setTokenType] = useState("solana");
   const [keys, setKeys] = useState<SeedOutputProps[]>([]);
   const [show, setShow] = useState(false);
   const [showSecretKey, setShowSecretKey] = useState(false);
@@ -66,6 +67,7 @@ export default function SeedInput() {
       const { data } = await axios.post("/api/newWallet", {
         i: walletCount,
         seed: currentSeed,
+        tokenType,
       });
       setKeys([
         ...keys,
@@ -159,7 +161,7 @@ export default function SeedInput() {
             keys.map((item, index) => (
               <div key={index} className="mt-6 p-4 border rounded-xl shadow-lg">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Solana Wallet {index + 1}
+                  {tokenType} Wallet {index + 1}
                 </h3>
                 <div className="p-3  rounded-lg border border-gray-300 dark:border-gray-700 shadow">
                   <div className="text-sm font-mono flex items-center justify-between break-all">
@@ -232,6 +234,32 @@ export default function SeedInput() {
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-28 h-12 flex items-center justify-around"
+                >
+                  {tokenType}
+                  <ChevronDownIcon
+                    className="-me-1 opacity-60"
+                    size={16}
+                    aria-hidden="true"
+                  />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="min-w-(--radix-dropdown-menu-trigger-width)">
+                <DropdownMenuItem onSelect={() => setTokenType("solana")}>
+                  Solana
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setTokenType("ethereum")}>
+                  Ethereum
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setTokenType("bitcoin")}>
+                  Bitcoin
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-40 h-12">
                   {seedBit}
                   <ChevronDownIcon
@@ -254,7 +282,7 @@ export default function SeedInput() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button onClick={handleGenerateSeed} className="h-12">
+            <Button onClick={handleGenerateSeed} className="h-12 w-24">
               {isLoading ? <Loader2 className="animate-spin" /> : "Generate"}
             </Button>
           </div>
